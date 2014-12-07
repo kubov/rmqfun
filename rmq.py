@@ -13,16 +13,21 @@ class Rmq:
 
         self.ex_channel.exchange_declare(exchange=e_name, type=e_type)
 
-    def queue_declare(self, name=None):
+    def queue_declare(self, name=None, exclusive=False):
         if self.que_channel == None:
             self.que_channel = self.connection.channel()
 
-        self.que_channel.queue_declare(queue=name)
+        self.que_channel.queue_declare(queue=name, exclusive=exclusive)
 
-    def publish(self, queue, body, exchange=''):
+    def queue_bind(self, queue, exchange, routing_key):
+        self.queue_declare(queue)
+        self.que_channel.queue_bind(exchange=exchange, queue=queue, routing_key=routing_key)
+
+    def publish(self, routing_key, body, exchange=''):
         if self.pub_channel == None:
             self.pub_channel = self.connection.channel()
-        self.pub_channel.basic_publish(exchange=exchange, routing_key=queue, body=body)
+
+        self.pub_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=body)
 
     def callback(self, ch, method, props, body):
         pass
